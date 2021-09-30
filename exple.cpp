@@ -11,10 +11,14 @@
 /*============================================================================*/
 /* Includes                                                                   */
 /*============================================================================*/
+#include <iterator>
 #include <opencv2/core.hpp>
+#include <opencv2/core/types.hpp>
 #include <opencv2/highgui.hpp>
 #include <iostream>
+#include <opencv2/imgproc.hpp>
 #include "opencv2/opencv.hpp"
+#include "opencv2/highgui/highgui.hpp"
 
 /*============================================================================*/
 /* Defines                                                                    */
@@ -27,6 +31,12 @@
 /*============================================================================*/
 /* Local Types                                                                */
 /*============================================================================*/
+
+/*============================================================================*/
+/* Global Variables                                                                */
+/*============================================================================*/
+
+cv::Mat img;
 
 /*============================================================================*/
 /* Static Variables                                                           */
@@ -52,6 +62,37 @@ void rotateImage(const cv::Mat &i_src, double angle, cv::Mat &dest){
 
 }
 
+void contrasteImage(const cv::Mat &i_src, double step, cv::Mat &dest){
+    i_src.convertTo(dest, -1, step, 0);
+}
+
+void shineImage(const cv::Mat &i_src, double bright, cv::Mat &dest){
+    i_src.convertTo(dest, -1, 1, bright);
+}
+
+void CallBackFunc(int event, int x, int y, int flags, void* userdata){
+  if(cv::EVENT_MOUSEMOVE == event){
+    std::cout << "Mouse position :(" << x << "," << y << ")" << std::endl;
+  }
+  if(cv::EVENT_RBUTTONDOWN == event){
+    cv::Vec3b point = img.at<cv::Vec3b>(y,x);
+    uchar B = point[0];
+    uchar G = point[1];
+    uchar R = point[2];
+    std::cout << "RGB pixel : (" << (int) R << "," << (int) G << "," << (int) B << ")" << std::endl;
+  }
+  if(cv::EVENT_LBUTTONDOWN == event){
+    cv::Mat HSV;
+    cv::Mat RGB = img(cv::Rect(x,y,1,1));
+    cv::cvtColor(RGB, HSV, cv::COLOR_BGR2HSV);
+    cv::Vec3b point = HSV.at<cv::Vec3b>(0,0);
+    int H = point[0]; //hue
+    int S = point[1]; //saturation
+    int V = point[2]; //value
+    std::cout << "HSV pixel : (" << H << "," << S << "," << V << ")" << std::endl;
+  }
+}
+
 /*============================================================================*/
 /* Function Description                                                       */
 /*============================================================================*/
@@ -68,7 +109,7 @@ int main(int argc, char** argv)
   char* filename = argv[1];
   //const char filename[] = "smarties.jpg";
 
-  cv::Mat img = cv::imread(filename, cv::IMREAD_COLOR/*IMREAD_GRAYSCALE*/);
+  img = cv::imread(filename, cv::IMREAD_COLOR/*IMREAD_GRAYSCALE*/);
   if(img.empty())
   {
     std::cout << "Cannot load image!" << std::endl;
@@ -80,6 +121,7 @@ int main(int argc, char** argv)
     cv::Mat dest;
     char key;
     double angle = 0;
+    double step = 1, bright = 0;
     while((key = cv::waitKey(0)) != 'q'){
       if('l' == key){
         angle += 15;
@@ -88,11 +130,27 @@ int main(int argc, char** argv)
         angle -= 15;
       }
       if('s' == key){
-        cv::imwrite("rotated_im.png", dest);
+        cv::imwrite("new_im.png", dest);
       }
-      rotateImage(img, angle, dest);
+      if('a' == key){
+        step += 0.5;
+      }
+      if('z' == key){
+        step -= 0.5;
+      }
+      if('e' == key){
+        bright += 10;
+      }
+      if('d' == key){
+        bright -= 10;
+      }
+      shineImage(img, bright, dest);
+      contrasteImage(dest, step, dest);
+      rotateImage(dest, angle, dest);
+      cv::setMouseCallback("image", CallBackFunc, NULL);
       cv::imshow("image", dest);
+      
     }
   }
-  return res;
+    return res;
 }

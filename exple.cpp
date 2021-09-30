@@ -93,6 +93,27 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata){
   }
 }
 
+void extractYellowSmarties(){
+  cv::Mat image = cv::imread("smarties.jpg", cv::IMREAD_COLOR/*IMREAD_GRAYSCALE*/);
+  if(image.empty())
+  {
+    std::cout << "Cannot load image!" << std::endl;
+  }
+  cv::namedWindow("yellowSmarties", cv::WINDOW_AUTOSIZE);
+  cv::namedWindow("filtre", cv::WINDOW_AUTOSIZE);
+  cv::Mat hsvMat, filtre, yellowSmartiesIm;
+  cv::cvtColor(image, hsvMat, cv::COLOR_BGR2HSV);
+  // On récupère notre masque/filtre
+  cv::inRange(hsvMat, cv::Scalar(29,234,207), cv::Scalar(30,261,255), filtre);
+  cv::copyTo(image, yellowSmartiesIm, filtre);
+  //std::vector<std::vector<cv::Point>> contours;
+  //std::vector<cv::Vec4i> hierarchy;
+  //cv::findContours(filtre,contours,hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+  //cv::drawContours(InputOutputArray image, InputArrayOfArrays contours, int contourIdx, const Scalar &color)
+  cv::imshow("filtre", filtre);
+  cv::imshow("yellowSmarties", yellowSmartiesIm);
+}
+
 /*============================================================================*/
 /* Function Description                                                       */
 /*============================================================================*/
@@ -149,7 +170,7 @@ int main(int argc, char** argv)
       rotateImage(dest, angle, dest);
       cv::setMouseCallback("image", CallBackFunc, NULL);
       cv::imshow("image", dest);
-      
+      extractYellowSmarties();
     }
   }
     return res;

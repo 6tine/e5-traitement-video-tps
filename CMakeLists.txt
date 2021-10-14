@@ -54,6 +54,9 @@ endif()
 # Project
 # ==========================================================
 file(GLOB proj_srcs *.cpp)
-add_executable(${CMAKE_PROJECT_NAME} ${proj_srcs})
+add_executable(${CMAKE_PROJECT_NAME} exple.cpp)
 target_link_libraries(${CMAKE_PROJECT_NAME} ${EXTRA_LIBS})
+
+add_executable(choux choux.cpp)
+target_link_libraries(choux ${EXTRA_LIBS})
 
